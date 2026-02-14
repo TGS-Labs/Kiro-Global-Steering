@@ -14,6 +14,8 @@
    - Windows: `.venv\Scripts\activate`
 3. Install dependencies within activated environment
 4. Verify activation before running commands
+5. After you've created a virtual environment, upgrade to the latest version of pip
+6. If you get a warning message that you're not running the latest version of pip, upgrade to the latest version of pip
 
 ### Requirements
 - Always check if `.venv` exists before creating

@@ -29,10 +29,10 @@ inclusion: always
 - If there are more than 500 test executions in a script, it should show a status bar to the user to confirm that tests are still running
 
 ### Coverage Standards
-- Minimum 95% coverage across all metrics
+- Minimum 99% coverage across all metrics
 - Measure statements, branches, functions, and lines
 - Use appropriate coverage tools for your language
-- No task is complete below 95% threshold
+- No task is complete below 99% threshold
 
 ### Test Quality
 - Tests must validate actual functionality
@@ -46,8 +46,12 @@ inclusion: always
 3. Re-run until all tests pass
 4. Never complete a task with failing tests
 
-## Reduce Warnings
-1. Check for warnings in the output of test code and implement guidance where possible
+## Fix Warnings
+1. If test code outputs warnings, these should be treated the same way as errors
+2. Do not ignore warnings
+3. Only accept warnings if fixing it would cause more errors
+4. You must attempt to fix warnings
+5. If you cannot fix a warning you MUST explicitly explain to a user why you cannot fix the warning
 
 ## When Coverage <95%
 1. Identify uncovered code paths
