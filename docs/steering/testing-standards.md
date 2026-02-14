@@ -45,6 +45,9 @@ inclusion: always
 3. Re-run until all tests pass
 4. Never complete a task with failing tests
 
+## Reduce Warnings
+1. Check for warnings in the output of test code and implement guidance where possible
+
 ## When Coverage <95%
 1. Identify uncovered code paths
 2. Add tests for missing coverage
