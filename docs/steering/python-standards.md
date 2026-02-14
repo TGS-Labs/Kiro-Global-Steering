@@ -24,3 +24,6 @@
 ### Typing
 - Always define types in the input and output of functions
 - When testing, always check that types are respected and throw an error if an incorrect type is received.
+
+### Formatting
+1. Line length must be 99 characters or less. NO EXCPETIONS
