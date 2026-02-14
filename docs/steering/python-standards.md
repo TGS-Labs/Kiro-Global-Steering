@@ -26,7 +26,7 @@
 - When testing, always check that types are respected and throw an error if an incorrect type is received.
 
 ### Formatting
-1. Line length must be 99 characters or less. NO EXCPETIONS
+1. Line length must be 88 characters or less. NO EXCPETIONS
 2. All unused imports must be removed
 3. After the unused imports are removed, re-run all the tests to ensure they still pass
 4. W293 must be followed
