@@ -1,3 +1,9 @@
+---
+inclusion: fileMatch
+fileMatchPattern: ["**/*.py"]
+---
+
+
 # Python Standards
 
 ## Virtual Environment
@@ -14,8 +20,7 @@
    - Windows: `.venv\Scripts\activate`
 3. Install dependencies within activated environment
 4. Verify activation before running commands
-5. After you've created a virtual environment, upgrade to the latest version of pip
-6. If you get a warning message that you're not running the latest version of pip, upgrade to the latest version of pip
+5. Upgrade pip to latest version after creating virtual environment
 
 ### Requirements
 - Always check if `.venv` exists before creating
@@ -25,10 +30,58 @@
 
 ### Typing
 - Always define types in the input and output of functions
-- When testing, always check that types are respected and throw an error if an incorrect type is received.
+- When testing, always check that types are respected and throw an error if an incorrect type is received
 
 ### Formatting
-1. Line length must be 88 characters or less. NO EXCPETIONS
+1. Line length must be 88 characters or less. NO EXCEPTIONS
 2. All unused imports must be removed
-3. After the unused imports are removed, re-run all the tests to ensure they still pass
+3. After unused imports are removed, re-run all tests to ensure they still pass
 4. W293 must be followed
+
+## Code Quality Tools
+
+Use standard Python linters and formatters for compliance:
+
+```bash
+# Format code (auto-fixes line length, style)
+black tests/ scripts/
+
+# Check style, unused imports, violations
+flake8 tests/ scripts/
+
+# Check type annotations
+mypy tests/ scripts/
+
+# Check test coverage
+pytest --cov=tests --cov=scripts tests/
+```
+
+### Tool Configuration
+
+**black**: Auto-configured to 88 character line length (PEP 8 default)
+
+**flake8** (`.flake8` or `setup.cfg`):
+```ini
+[flake8]
+max-line-length = 88
+extend-ignore = E203, W503
+exclude = .venv, .git, __pycache__, .hypothesis, .pytest_cache
+```
+
+**mypy** (`mypy.ini` or `pyproject.toml`):
+```ini
+[mypy]
+python_version = 3.8
+warn_return_any = True
+warn_unused_configs = True
+disallow_untyped_defs = True
+```
+
+### Pre-Commit Workflow
+
+Before committing code:
+1. Run `black` to auto-format
+2. Run `flake8` to check for issues
+3. Run `mypy` to verify type annotations
+4. Run tests with coverage
+5. Fix any reported issues

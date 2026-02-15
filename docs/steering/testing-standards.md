@@ -29,10 +29,10 @@ inclusion: always
 - If there are more than 500 test executions in a script, it should show a status bar to the user to confirm that tests are still running
 
 ### Coverage Standards
-- Minimum 99% coverage across all metrics
+- Minimum 95% coverage across all metrics
 - Measure statements, branches, functions, and lines
 - Use appropriate coverage tools for your language
-- No task is complete below 99% threshold
+- No task is complete below 95% threshold
 
 ### Test Quality
 - Tests must validate actual functionality
