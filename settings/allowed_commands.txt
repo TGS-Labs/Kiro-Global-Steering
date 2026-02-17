@@ -45,5 +45,6 @@ git mv *
 git status *
 git log *
 ./scripts/run-tests.sh *
+bash -n *
 webFetch
 remote_web_search
