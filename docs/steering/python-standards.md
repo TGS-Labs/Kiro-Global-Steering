@@ -89,3 +89,73 @@ Before committing code:
 3. Run `mypy` to verify type annotations
 4. Run tests with coverage
 5. Fix any reported issues
+
+## Property-Based Testing with Hypothesis
+
+### NON-NEGOTIABLE
+1. Property tests MUST use two-tier configuration for example counts
+2. Local development MUST use 10-15 examples for fast feedback
+3. CI/CD pipelines MUST use 50+ examples for thorough validation
+4. NEVER run full example counts during local development
+
+### Configuration Strategy
+
+Use Hypothesis profiles to separate local and CI testing:
+
+**conftest.py** (or test configuration file):
+```python
+from hypothesis import settings, Verbosity
+
+# Local development profile: fast feedback
+settings.register_profile(
+    "dev",
+    max_examples=15,
+    verbosity=Verbosity.normal,
+    deadline=None,
+)
+
+# CI/CD profile: thorough validation
+settings.register_profile(
+    "ci",
+    max_examples=100,
+    verbosity=Verbosity.verbose,
+    deadline=None,
+)
+
+# Load profile from environment or default to dev
+import os
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "dev"))
+```
+
+### Usage
+
+**Local development** (fast, 10-15 examples):
+```bash
+pytest tests/
+```
+
+**CI/CD pipeline** (thorough, 100 examples):
+```bash
+HYPOTHESIS_PROFILE=ci pytest tests/
+```
+
+### Writing Property Tests
+
+Always use the configured profile, never override in individual tests:
+
+```python
+from hypothesis import given
+from hypothesis import strategies as st
+
+@given(st.integers())
+def test_property(value: int) -> None:
+    # Test uses profile settings automatically
+    assert some_property(value)
+```
+
+### Rationale
+
+- 10-15 examples provide quick feedback during development
+- 100 examples catch edge cases in CI without slowing local work
+- Prevents 10-15 minute test suite runs during development
+- Maintains thorough validation in automated pipelines
