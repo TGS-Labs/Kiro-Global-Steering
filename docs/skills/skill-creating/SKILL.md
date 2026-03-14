@@ -60,15 +60,22 @@ Whenever you generate a `SKILL.md`, follow this structure unless the user explic
 1. YAML frontmatter
    - Required fields:
      - `name`:
-       - Lowercase, numbers, hyphens only (e.g. `pr-review`, `api-design-mentor`).
-       - Should match the folder name that will contain `SKILL.md`.
+       - Max 64 characters. Lowercase letters, numbers, and hyphens only.
+       - Must not start or end with a hyphen, and no consecutive hyphens (`--`).
+       - Must match the parent directory name (e.g. `pr-review/SKILL.md` requires `name: pr-review`).
      - `description`:
-       - 1-3 sentences describing when to use the skill and what it does.
-       - Include specific triggers and file types when relevant (e.g. "Use this when reviewing pull requests or preparing code for review, especially for backend services in this repo").
+       - Max 1024 characters. Non-empty.
+       - Write in third person (avoid "I" or "you" to prevent viewpoint conflicts when injected into system prompts).
+       - Follow the "what + when + do-not" pattern:
+         - What: what the skill produces or does.
+         - When: trigger conditions and keywords users would naturally use.
+         - Do-not: what the skill should not be used for (prevents mis-triggering).
+       - Example: `"Generates API client code from OpenAPI specs. Use when the user provides a spec file or asks to scaffold an API client. Do not use for general code review or refactoring."`
    - Optional fields (recommend when useful):
-     - `license`: e.g. `MIT` or a reference to a project license.
-     - `compatibility`: briefly note environment or tool requirements (e.g. `requires git`, `internet access optional`).
-     - `metadata`: put things like `author`, `version`, `tags`.
+     - `license`: e.g. `MIT` or a reference to a bundled license file.
+     - `compatibility`: max 500 characters. Note environment requirements (e.g. `requires git`, `internet access optional`). Most skills do not need this.
+     - `metadata`: arbitrary key-value pairs like `author`, `version`, `tags`.
+     - `allowed-tools`: space-delimited list of pre-approved tools the skill may use (experimental, support varies by agent).
 
 2. Overview section
    - Title: `## Purpose` or similar.
@@ -77,6 +84,7 @@ Whenever you generate a `SKILL.md`, follow this structure unless the user explic
 
 3. Operating instructions
    - Title: `## How to use this skill`.
+   - Use imperative voice: start sentences with verbs, omit "you" (e.g. "Read the input file" not "You should read the input file").
    - Provide numbered steps for how the agent should behave once the skill is activated.
    - Include guidelines for:
      - How to read the current workspace context (files, diffs, specs, tests).
@@ -134,7 +142,38 @@ Use workspace skills for project-specific workflows. Use global skills for perso
 
 | Location | Recommendation | Loaded into context? |
 |---|---|---|
-| `SKILL.md` | < 5,000 words | Yes (when activated) |
+| `SKILL.md` | < 5,000 words / < 500 lines | Yes (when activated) |
 | `references/` | < 10,000 words per file | Yes (on-demand) |
 | `scripts/` | No strict limit | No (executed only) |
 | `assets/` | < 10 MB per file | No (read/copied only) |
+
+## File references
+
+When referencing other files from `SKILL.md`, use relative paths from the skill root:
+
+```markdown
+See `references/api-docs.md` for endpoint details.
+Run the extraction script: `scripts/extract.py`
+```
+
+Keep file references one level deep from `SKILL.md`. Avoid deeply nested reference chains where one reference file points to another.
+
+---
+
+# Security considerations
+
+Skills provide agents with new capabilities through instructions and code. Only install skills from trusted sources. When evaluating a third-party skill:
+
+- Read all bundled files, especially scripts and any non-obvious resources.
+- Watch for instructions that connect to external network sources.
+- Check code dependencies for anything unexpected.
+- Be cautious of hidden instructions in HTML comments within markdown files.
+
+---
+
+# Developing and iterating on skills
+
+1. Start with evaluation: identify gaps in the agent's capabilities by running it on representative tasks and observing where it struggles. Build skills to address those shortcomings.
+2. Monitor usage: watch how the agent uses the skill in real scenarios. Look for unexpected trigger paths, missed activations, or over-reliance on certain sections.
+3. Iterate with the agent: after a successful task, ask the agent to capture its approach into the skill. After a failure, ask it to reflect on what went wrong and update the skill accordingly.
+4. Test descriptions: maintain a short list of inputs that should trigger the skill and inputs that should not. Re-test after changing the description.
