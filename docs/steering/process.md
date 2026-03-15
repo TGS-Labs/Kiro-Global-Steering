@@ -1,3 +1,7 @@
+---
+inclusion: always
+---
+
 # Development Process for AI Workers
 
 LLMs have a bias towards writing new code and new functionality. You should question whether this is the best approach. This document contains instructions on how you should execute tasks and which course of action is preferred if several are available. 
