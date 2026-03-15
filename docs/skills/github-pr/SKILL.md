@@ -88,11 +88,13 @@ Optional flags:
 
 4. If the script fails, read the error output and report it to the user with remediation steps.
 
-### 5. Confirm and clean up
+### 5. Clean up and confirm
 
 1. After successful creation, report the PR URL to the user (the `gh` CLI prints it).
-2. Switch back to the main branch: `git checkout main`
-3. Offer to open the PR in the browser if needed: `gh pr view --web`
+2. Note the current branch name before switching: e.g. `feature/my-change`
+3. Switch back to main: `git checkout main`
+4. Delete the local branch only: `git branch -d <branch-name>`. Do NOT delete the remote branch — it is needed for the open PR.
+5. Offer to open the PR in the browser if needed: `gh pr view --web`
 
 ## Script reference
 
