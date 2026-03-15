@@ -11,26 +11,48 @@ inclusion: always
 1. ALL Python work MUST be completed in a virtual environment
 2. Virtual environment MUST be named `.venv` in project root
 3. NEVER install packages globally or outside the virtual environment
+4. ALL commands MUST be run by activating the venv first: `source .venv/bin/activate && YOUR_COMMAND`
+5. NEVER call binaries directly from `.venv/bin/` (e.g. `.venv/bin/pip`, `.venv/bin/python`). Always activate then run.
+
+### Command Format
+Every Python-related command MUST follow this pattern:
+
+```bash
+source .venv/bin/activate && YOUR_COMMAND_GOES_HERE
+```
+
+Examples:
+```bash
+# Correct
+source .venv/bin/activate && pip install -e ".[dev]"
+source .venv/bin/activate && python my_script.py
+source .venv/bin/activate && pytest tests/
+source .venv/bin/activate && black src/
+
+# WRONG — never do this
+.venv/bin/pip install something
+.venv/bin/python my_script.py
+pip install -r requirements.txt
+```
 
 ### Setup Process
 1. Create virtual environment: `python -m venv .venv`
-2. Activate before any work:
-   - macOS/Linux: `source .venv/bin/activate`
-   - Windows: `.venv\Scripts\activate`
-3. Install dependencies within activated environment
-4. Verify activation before running commands
-5. Upgrade pip to latest version after creating virtual environment
+2. Activate and upgrade pip: `source .venv/bin/activate && pip install --upgrade pip`
+3. Install dependencies: `source .venv/bin/activate && pip install -e .`
+4. All subsequent commands follow the same `source .venv/bin/activate && ...` pattern
 
 ### Requirements
 - Always check if `.venv` exists before creating
 - Include `.venv/` in `.gitignore`
 - Document dependencies in `pyproject.toml`
-- All pip installs, script runs, and tests must use the virtual environment
+- All pip installs, script runs, and tests must activate the venv first
 
 ### Project Configuration
 - Always use `pyproject.toml` as the single source of project metadata, dependencies, and tool configuration
-- Do not use legacy configuration files such as `setup.py`, `setup.cfg`, or `requirements.txt`
-- Define all tool settings (black, flake8, mypy, pytest, etc.) in `pyproject.toml` where the tool supports it
+- Do not use legacy configuration files such as `setup.py`, `setup.cfg`, `requirements.txt`, `.flake8`, `mypy.ini`, or `pytest.ini`
+- Define all tool settings (black, flake8, mypy, pytest, etc.) in `pyproject.toml`
+- Use `flake8-pyproject` as a dev dependency so flake8 reads config from `pyproject.toml`
+- Install the project with `source .venv/bin/activate && pip install -e ".[dev]"` (dev extras for tooling)
 
 ### Typing
 - Always define types in the input and output of functions
@@ -52,37 +74,43 @@ e.g.
 
 ```bash
 # Format code (auto-fixes line length, style)
-black tests/ scripts/ src/ your-module-name/ etc/
+source .venv/bin/activate && black tests/ scripts/ src/ your-module-name/ etc/
 
 # Check style, unused imports, violations
-flake8 tests/ scripts/ src/ your-module-name/ etc/
+source .venv/bin/activate && flake8 tests/ scripts/ src/ your-module-name/ etc/
 
 # Check type annotations
-mypy tests/ scripts/ src/ your-module-name/ etc/
+source .venv/bin/activate && mypy tests/ scripts/ src/ your-module-name/ etc/
 
 # Check test coverage
-pytest --cov=tests --cov=scripts tests/ 
+source .venv/bin/activate && pytest --cov=tests --cov=scripts tests/ 
 ```
 
 ### Tool Configuration
 
-**black**: Auto-configured to 88 character line length (PEP 8 default)
+All tool configuration MUST live in `pyproject.toml`. Do not use standalone config files like `.flake8`, `setup.cfg`, `mypy.ini`, or `pytest.ini`.
 
-**flake8** (`.flake8` or `setup.cfg`):
-```ini
-[flake8]
+Note: flake8 does not natively support `pyproject.toml`. Use `flake8-pyproject` (or `Flake8-pyproject`) as a dependency so flake8 reads its config from `pyproject.toml`.
+
+Example `pyproject.toml` tool sections:
+
+```toml
+[tool.black]
+line-length = 88
+
+[tool.flake8]
 max-line-length = 88
-extend-ignore = E203, W503
-exclude = .venv, .git, __pycache__, .hypothesis, .pytest_cache
-```
+extend-ignore = ["E203", "W503"]
+exclude = [".venv", ".git", "__pycache__", ".hypothesis", ".pytest_cache"]
 
-**mypy** (`mypy.ini` or `pyproject.toml`):
-```ini
-[mypy]
-python_version = 3.8
-warn_return_any = True
-warn_unused_configs = True
-disallow_untyped_defs = True
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 ```
 
 ### Pre-Commit Workflow
@@ -135,12 +163,12 @@ settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "dev"))
 
 **Local development** (fast, 10-15 examples):
 ```bash
-pytest tests/
+source .venv/bin/activate && pytest tests/
 ```
 
 **CI/CD pipeline** (thorough, 100 examples):
 ```bash
-HYPOTHESIS_PROFILE=ci pytest tests/
+source .venv/bin/activate && HYPOTHESIS_PROFILE=ci pytest tests/
 ```
 
 ### Writing Property Tests
