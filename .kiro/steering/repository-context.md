@@ -10,7 +10,7 @@ This repository is a staging area for Kiro global configuration files. Files are
 - `docs/skills/` — Skill folders to be installed globally to `~/.kiro/skills/`
 - `docs/hooks/` — Hook files to be installed globally to `~/.kiro/hooks/`
 - `scripts/copy-steering.sh` — Installs steering files from `docs/steering/` to `~/.kiro/steering/`
-- `scripts/install-skills.sh` — Installs skill folders from `docs/skills/` to `~/.kiro/skills/`
+- `scripts/install-steering-and-skills.sh` — Installs steering files and skill folders from `docs/` to `~/.kiro/`
 - `scripts/install-hooks.sh` — Installs hook files from `docs/hooks/` to `~/.kiro/hooks/`
 
 ## Default behavior
@@ -28,7 +28,7 @@ Only write directly into `.kiro/steering/`, `.kiro/skills/`, or `.kiro/hooks/` i
 After authoring or updating files in `docs/`, run the appropriate install script:
 
 ```bash
-./scripts/copy-steering.sh    # installs steering files
-./scripts/install-skills.sh   # installs skill folders
-./scripts/install-hooks.sh    # installs hook files
+./scripts/copy-steering.sh                # installs steering files
+./scripts/install-steering-and-skills.sh  # installs steering files and skill folders
+./scripts/install-hooks.sh                # installs hook files
 ```
