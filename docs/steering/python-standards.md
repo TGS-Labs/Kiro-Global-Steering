@@ -25,8 +25,13 @@ fileMatchPattern: ["**/*.py"]
 ### Requirements
 - Always check if `.venv` exists before creating
 - Include `.venv/` in `.gitignore`
-- Document dependencies in `requirements.txt` or `pyproject.toml`
+- Document dependencies in `pyproject.toml`
 - All pip installs, script runs, and tests must use the virtual environment
+
+### Project Configuration
+- Always use `pyproject.toml` as the single source of project metadata, dependencies, and tool configuration
+- Do not use legacy configuration files such as `setup.py`, `setup.cfg`, or `requirements.txt`
+- Define all tool settings (black, flake8, mypy, pytest, etc.) in `pyproject.toml` where the tool supports it
 
 ### Typing
 - Always define types in the input and output of functions
