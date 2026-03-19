@@ -33,6 +33,8 @@ source .venv/bin/activate && black src/
 .venv/bin/pip install something
 .venv/bin/python my_script.py
 pip install -r requirements.txt
+python -c "print('hello')"
+source .venv/bin/activate && python -c "import json; ..."
 ```
 
 ### Setup Process
@@ -53,6 +55,137 @@ pip install -r requirements.txt
 - Define all tool settings (black, flake8, mypy, pytest, etc.) in `pyproject.toml`
 - Use `flake8-pyproject` as a dev dependency so flake8 reads config from `pyproject.toml`
 - Install the project with `source .venv/bin/activate && pip install -e ".[dev]"` (dev extras for tooling)
+
+## Running Python Code
+
+### NON-NEGOTIABLE
+1. NEVER run Python code inline in the console (e.g. `python -c "..."`)
+2. If you need to run Python logic, write it as a script file in `scripts/`
+3. Then execute the script: `source .venv/bin/activate && python scripts/your_script.py`
+4. This applies to ALL Python execution: one-liners, quick checks, data transformations, everything
+5. Scripts MUST be committed to the repository so they are reviewable and repeatable
+
+### Why
+- Inline console Python is not reproducible, not reviewable, and not testable
+- Scripts in `scripts/` are version-controlled and can be linted, tested, and reused
+- If it's worth running, it's worth writing down
+
+### Example: Writing a Script Instead of Console Commands
+
+Below is a complete example of a well-structured utility script. Use
+this as a template when you need to run any Python logic. This example
+runs `cfn-lint` against CloudFormation templates, but the pattern
+applies to any task: data transforms, API calls, file processing, etc.
+
+```bash
+#!/bin/bash
+#
+# run-cfn-lint.sh — Validate CloudFormation templates using cfn-lint
+#
+# Usage:
+#   ./scripts/run-cfn-lint.sh                          # lint all templates in cloudformation/
+#   ./scripts/run-cfn-lint.sh cloudformation/iam.yaml  # lint a specific file
+#   ./scripts/run-cfn-lint.sh path/to/dir/             # lint all templates in a directory
+#
+# Exit codes:
+#   0 — all templates passed
+#   1 — one or more templates have errors
+#   2 — script misconfiguration (missing venv, no templates found, etc.)
+
+set -euo pipefail
+
+# -------------------------------------------------------------------
+# Configuration — adapt these to each repository
+# -------------------------------------------------------------------
+DEFAULT_TEMPLATE_DIR="cloudformation"
+VENV_DIR=".venv"
+
+# -------------------------------------------------------------------
+# Helpers
+# -------------------------------------------------------------------
+info()  { echo "ℹ  $*"; }
+ok()    { echo "✓  $*"; }
+fail()  { echo "✗  $*" >&2; }
+
+# -------------------------------------------------------------------
+# Pre-flight checks
+# -------------------------------------------------------------------
+if [ ! -d "$VENV_DIR" ]; then
+    fail "Virtual environment not found at $VENV_DIR"
+    fail "Create one first: python -m venv $VENV_DIR"
+    exit 2
+fi
+
+# Activate the virtual environment
+# shellcheck disable=SC1091
+source "$VENV_DIR/bin/activate"
+
+# Ensure cfn-lint is installed
+if ! command -v cfn-lint &>/dev/null; then
+    fail "cfn-lint is not installed in the virtual environment"
+    fail "Install it: source $VENV_DIR/bin/activate && pip install cfn-lint"
+    exit 2
+fi
+
+# -------------------------------------------------------------------
+# Resolve target (file or directory)
+# -------------------------------------------------------------------
+TARGET="${1:-$DEFAULT_TEMPLATE_DIR}"
+
+if [ -f "$TARGET" ]; then
+    TEMPLATES=("$TARGET")
+elif [ -d "$TARGET" ]; then
+    # Collect .yaml, .yml, and .json files
+    TEMPLATES=()
+    while IFS= read -r -d '' f; do
+        TEMPLATES+=("$f")
+    done < <(find "$TARGET" -type f \( -name '*.yaml' -o -name '*.yml' -o -name '*.json' \) -print0 | sort -z)
+else
+    fail "Target not found: $TARGET"
+    exit 2
+fi
+
+if [ ${#TEMPLATES[@]} -eq 0 ]; then
+    fail "No CloudFormation templates found in $TARGET"
+    exit 2
+fi
+
+info "Found ${#TEMPLATES[@]} template(s) to validate"
+
+# -------------------------------------------------------------------
+# Run cfn-lint
+# -------------------------------------------------------------------
+ERRORS=0
+
+for tmpl in "${TEMPLATES[@]}"; do
+    info "Linting $tmpl"
+    if cfn-lint "$tmpl"; then
+        ok "$tmpl passed"
+    else
+        fail "$tmpl has errors"
+        ERRORS=$((ERRORS + 1))
+    fi
+done
+
+# -------------------------------------------------------------------
+# Summary
+# -------------------------------------------------------------------
+echo ""
+if [ "$ERRORS" -gt 0 ]; then
+    fail "$ERRORS of ${#TEMPLATES[@]} template(s) failed validation"
+    exit 1
+else
+    ok "All ${#TEMPLATES[@]} template(s) passed validation"
+    exit 0
+fi
+```
+
+Key patterns to follow when writing scripts:
+1. Use `set -euo pipefail` for safe error handling
+2. Accept arguments or use sensible defaults so the script is reusable
+3. Print clear output so the caller knows what happened
+4. Exit with a non-zero code on failure
+5. Keep it focused on one task
 
 ### Typing
 - Always define types in the input and output of functions
